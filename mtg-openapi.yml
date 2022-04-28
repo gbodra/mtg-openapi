@@ -1,0 +1,178 @@
+openapi: '3.0.2'
+info:
+  title: Magic The Gathering Open API
+  description: Find the best opportunities to make money with your cards.
+  version: '1.0'
+servers:
+  - url: https://api.server.test/v1
+paths:
+  /findCards:
+      get:
+        tags:
+          - Cards
+        summary: Find cards
+        responses:
+          '200':
+            description: OK
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/cardId'
+  /cards/{cardId}:
+    get:
+      tags:
+        - Cards
+      summary: Finds a specific card
+      parameters:
+        - in: path
+          name: cardId
+          schema:
+            type: string
+          required: true
+          description: The card id
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/card'
+        '400':
+          description: Bad request
+  /findAlerts:
+    get:
+      tags:
+        - Alerts
+      summary: List alerts
+      responses:
+        '200':
+          description: List all the alerts of the logged user
+        '400':
+          description: Bad request
+  /alert:
+    post:
+      tags:
+        - Alerts
+      summary: Create a price alert for a specific cards.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/createAlertRequest'
+      responses:
+        '200':
+          description: Returns the alert id as a json object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/createAlertResponse'
+    put:
+      tags:
+        - Alerts
+      summary: Edit a price alert
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/updateAlertRequest'
+      responses:
+        '200':
+          description: Alert was updated
+        '400':
+          description: Bad request
+    delete:
+      tags:
+        - Alerts
+      summary: Deletes an alert
+      responses:
+        '200':
+          description: Alert was deleted
+        '400':
+          description: Bad request
+components:
+  schemas:
+    cardId:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          example: da921ef2-5b95-4ede-ba84-a36c099078e9
+    card:
+      type: object
+      required:
+        - id
+        - name
+        - mana_cost
+        - card_types
+        - description
+      properties:
+        id:
+          type: string
+          example: da921ef2-5b95-4ede-ba84-a36c099078e9
+        name:
+          type: string
+          example: Academic Probation
+        mana_cost:
+          type: string
+        card_types:
+          type: string
+        description:
+          type: string
+          example: Choose one — Choose a nonland card name. Opponents can't cast spells with the chosen name until your next turn. Choose target nonland permanent. Until your next turn, it can't attack or block, and its activated abilities can't be activated.
+        expansion:
+          type: string
+        rarity:
+          type: string
+        card_number:
+          type: string
+        artist:
+          type: string
+    createAlertRequest:
+      type: object
+      required:
+        - card_id
+        - price
+        - email
+      properties:
+        card_id:
+          type: string
+          example: da921ef2-5b95-4ede-ba84-a36c099078e9
+        price:
+          type: number
+          format: double
+          example: 1.5
+        email:
+          type: string
+          example: test@test.com
+    createAlertResponse:
+      type: object
+      required:
+        - alert_id
+      properties:
+        alert_id:
+          type: string
+          example: da921ef2-5b95-4ede-ba84-a36c099458e9
+    updateAlertRequest:
+      type: object
+      required:
+        - alert_id
+        - price
+        - email
+      properties:
+        alert_id:
+          type: string
+          example: da921ef2-5b95-4ede-ba84-a36c099458e9
+        price:
+          type: number
+          format: double
+          example: 1.5
+        email:
+          type: string
+          example: test@test.com
+        
