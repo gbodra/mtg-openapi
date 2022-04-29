@@ -3,6 +3,7 @@ package controller
 import (
 	"context"
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/gbodra/mtg-openapi/model"
@@ -11,20 +12,9 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-var ctx = context.Background()
 var MongoClient *mongo.Client
 
-func FindCards(w http.ResponseWriter, r *http.Request) {
-	coll := MongoClient.Database("mtg").Collection("cards")
-	var result model.Card
-	_ = coll.FindOne(context.TODO(), bson.D{{"name", "Assembled Ensemble"}}).Decode(&result)
-	resultJson, _ := json.Marshal(result)
-
-	w.Header().Set("Content-Type", "application/json")
-	w.Write([]byte(resultJson))
-}
-
-func FindCard(w http.ResponseWriter, r *http.Request) {
+func FindCardById(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
 	cardsCollection := MongoClient.Database("mtg").Collection("cards")
@@ -35,9 +25,32 @@ func FindCard(w http.ResponseWriter, r *http.Request) {
 	var resultPrice model.Price
 	_ = pricesCollection.FindOne(context.TODO(), bson.D{{"id", vars["cardId"]}}).Decode(&resultPrice)
 
-	result.Prices = resultPrice
+	result.Prices = getPrice(result.ID)
 	resultJson, _ := json.Marshal(result)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write([]byte(resultJson))
+}
+
+func FindCardByName(w http.ResponseWriter, r *http.Request) {
+	query := r.URL.Query().Get("q")
+	log.Println(query)
+	var result model.Card
+
+	cardsCollection := MongoClient.Database("mtg").Collection("cards")
+	_ = cardsCollection.FindOne(context.TODO(), bson.D{{"name", query}}).Decode(&result)
+
+	result.Prices = getPrice(result.ID)
+	resultsJson, _ := json.Marshal(result)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write([]byte(resultsJson))
+}
+
+func getPrice(cardId string) model.Price {
+	pricesCollection := MongoClient.Database("mtg").Collection("prices")
+	var resultPrice model.Price
+	_ = pricesCollection.FindOne(context.TODO(), bson.D{{"id", cardId}}).Decode(&resultPrice)
+
+	return resultPrice
 }

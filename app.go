@@ -45,8 +45,8 @@ func (a *App) initializeRoutes() {
 	a.Router.HandleFunc("/health", controller.HealthCheck).Methods("GET")
 
 	// Cards
-	a.Router.HandleFunc("/findCards", controller.FindCards).Methods("GET")
-	a.Router.HandleFunc("/cards/{cardId}", controller.FindCard).Methods("GET")
+	a.Router.HandleFunc("/cards", controller.FindCardByName).Methods("GET")
+	a.Router.HandleFunc("/cards/{cardId}", controller.FindCardById).Methods("GET")
 
 	// Alerts
 	a.Router.HandleFunc("/findAlerts", controller.HealthCheck).Methods("GET")
