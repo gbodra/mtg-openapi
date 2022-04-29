@@ -84,6 +84,7 @@ paths:
           description: Alert was updated
         '400':
           description: Bad request
+  /alert/{alertId}:
     delete:
       tags:
         - Alerts
@@ -108,9 +109,12 @@ components:
       required:
         - id
         - name
-        - mana_cost
-        - card_types
-        - description
+        - scryfall_uri
+        - type_line
+        - colors
+        - rarity
+        - set
+        - set_name
       properties:
         id:
           type: string
@@ -118,20 +122,19 @@ components:
         name:
           type: string
           example: Academic Probation
-        mana_cost:
+        scryfall_uri:
           type: string
-        card_types:
+        type_line:
           type: string
-        description:
-          type: string
-          example: Choose one — Choose a nonland card name. Opponents can't cast spells with the chosen name until your next turn. Choose target nonland permanent. Until your next turn, it can't attack or block, and its activated abilities can't be activated.
-        expansion:
-          type: string
+        colors:
+          type: array
+          items:
+            type: string
         rarity:
           type: string
-        card_number:
+        set:
           type: string
-        artist:
+        set_name:
           type: string
     createAlertRequest:
       type: object

@@ -1,7 +1,8 @@
 package main
 
-import "log"
-
 func main() {
-	log.Println("Starting")
+	a := App{}
+	a.Initialize()
+
+	a.Run()
 }
