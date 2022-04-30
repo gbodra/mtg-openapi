@@ -1,7 +1,13 @@
 package model
 
+import (
+	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
+
 type Alert struct {
-	CardID string  `json:"card_id" bson:"card_id"`
-	Price  float64 `json:"price" bson:"price"`
-	Email  string  `json:"email" bson:"email"`
+	ID        primitive.ObjectID `json:"id,omitempty" bson:"_id"`
+	ChatID    int64              `json:"chat_id,omitempty" bson:"chat_id"`
+	CreatedAt time.Time          `json:"created_at" bson:"created_at"`
 }

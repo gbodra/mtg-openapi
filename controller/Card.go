@@ -9,6 +9,7 @@ import (
 	"github.com/gbodra/mtg-openapi/model"
 	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -19,11 +20,12 @@ func FindCardById(w http.ResponseWriter, r *http.Request) {
 
 	cardsCollection := MongoClient.Database("mtg").Collection("cards")
 	var result model.Card
-	_ = cardsCollection.FindOne(context.TODO(), bson.D{{"id", vars["cardId"]}}).Decode(&result)
+	filter := bson.D{primitive.E{Key: "id", Value: vars["cardId"]}}
+	_ = cardsCollection.FindOne(context.TODO(), filter).Decode(&result)
 
 	pricesCollection := MongoClient.Database("mtg").Collection("prices")
 	var resultPrice model.Price
-	_ = pricesCollection.FindOne(context.TODO(), bson.D{{"id", vars["cardId"]}}).Decode(&resultPrice)
+	_ = pricesCollection.FindOne(context.TODO(), filter).Decode(&resultPrice)
 
 	result.Prices = getPrice(result.ID)
 	resultJson, _ := json.Marshal(result)
@@ -38,7 +40,9 @@ func FindCardByName(w http.ResponseWriter, r *http.Request) {
 	var result model.Card
 
 	cardsCollection := MongoClient.Database("mtg").Collection("cards")
-	_ = cardsCollection.FindOne(context.TODO(), bson.D{{"name", query}}).Decode(&result)
+	filter := bson.D{primitive.E{Key: "name", Value: query}}
+
+	_ = cardsCollection.FindOne(context.TODO(), filter).Decode(&result)
 
 	result.Prices = getPrice(result.ID)
 	resultsJson, _ := json.Marshal(result)
@@ -50,7 +54,8 @@ func FindCardByName(w http.ResponseWriter, r *http.Request) {
 func getPrice(cardId string) model.Price {
 	pricesCollection := MongoClient.Database("mtg").Collection("prices")
 	var resultPrice model.Price
-	_ = pricesCollection.FindOne(context.TODO(), bson.D{{"id", cardId}}).Decode(&resultPrice)
+	filter := bson.D{primitive.E{Key: "id", Value: cardId}}
+	_ = pricesCollection.FindOne(context.TODO(), filter).Decode(&resultPrice)
 
 	return resultPrice
 }

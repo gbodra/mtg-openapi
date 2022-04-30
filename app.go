@@ -49,10 +49,10 @@ func (a *App) initializeRoutes() {
 	a.Router.HandleFunc("/cards/{cardId}", controller.FindCardById).Methods("GET")
 
 	// Alerts
-	a.Router.HandleFunc("/findAlerts", controller.HealthCheck).Methods("GET")
-	a.Router.HandleFunc("/alert", controller.HealthCheck).Methods("POST")
-	a.Router.HandleFunc("/alert", controller.HealthCheck).Methods("PUT")
-	a.Router.HandleFunc("/alert/{alertId}", controller.HealthCheck).Methods("DELETE")
+	a.Router.HandleFunc("/listAlerts", controller.GetAlerts).Methods("GET")
+	a.Router.HandleFunc("/alert/{chatId}", controller.GetAlert).Methods("GET")
+	a.Router.HandleFunc("/alert", controller.OptinAlert).Methods("POST")
+	a.Router.HandleFunc("/alert/{alertId}", controller.AlertOptout).Methods("DELETE")
 }
 
 func (a *App) Run() {
