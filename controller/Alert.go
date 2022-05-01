@@ -13,6 +13,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+// TODO: refatorar gestao de erros
+
 func OptinAlert(w http.ResponseWriter, r *http.Request) {
 	chatId, _ := strconv.ParseInt(r.URL.Query().Get("chat_id"), 10, 64)
 
