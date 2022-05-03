@@ -9,16 +9,18 @@ import (
 	"github.com/gbodra/mtg-openapi/controller"
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
+	"github.com/newrelic/go-agent/v3/newrelic"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
 type App struct {
-	Router *mux.Router
-	Port   string
-	Mongo  *mongo.Client
-	Bot    *tb.Bot
+	Router      *mux.Router
+	Port        string
+	Mongo       *mongo.Client
+	Bot         *tb.Bot
+	NewRelicApp *newrelic.Application
 }
 
 func (a *App) Initialize() {
@@ -36,26 +38,37 @@ func (a *App) Initialize() {
 	}
 
 	a.Router = mux.NewRouter()
+	a.initializeNewRelic()
 	a.initializeRoutes()
 	a.injectClients()
 }
 
 func (a *App) initializeRoutes() {
 	// Management routes
-	a.Router.HandleFunc("/health", controller.HealthCheck).Methods("GET")
+	a.Router.HandleFunc(newrelic.WrapHandleFunc(a.NewRelicApp, "/health", controller.HealthCheck)).Methods("GET")
 
 	// Cards
-	a.Router.HandleFunc("/cards", controller.FindCardByName).Methods("GET")
-	a.Router.HandleFunc("/cards/{cardId}", controller.FindCardById).Methods("GET")
+	a.Router.HandleFunc(newrelic.WrapHandleFunc(a.NewRelicApp, "/cards", controller.FindCardByName)).Methods("GET")
+	a.Router.HandleFunc(newrelic.WrapHandleFunc(a.NewRelicApp, "/cards/{cardId}", controller.FindCardById)).Methods("GET")
 
 	// Alerts
-	a.Router.HandleFunc("/listAlerts", controller.GetAlerts).Methods("GET")
-	a.Router.HandleFunc("/alert/{chatId}", controller.GetAlert).Methods("GET")
-	a.Router.HandleFunc("/alert", controller.OptinAlert).Methods("POST")
-	a.Router.HandleFunc("/alert/{alertId}", controller.AlertOptout).Methods("DELETE")
+	a.Router.HandleFunc(newrelic.WrapHandleFunc(a.NewRelicApp, "/listAlerts", controller.GetAlerts)).Methods("GET")
+	a.Router.HandleFunc(newrelic.WrapHandleFunc(a.NewRelicApp, "/alert/{chatId}", controller.GetAlert)).Methods("GET")
+	a.Router.HandleFunc(newrelic.WrapHandleFunc(a.NewRelicApp, "/alert", controller.OptinAlert)).Methods("POST")
+	a.Router.HandleFunc(newrelic.WrapHandleFunc(a.NewRelicApp, "/alert/{alertId}", controller.AlertOptout)).Methods("DELETE")
 
 	// Price
-	a.Router.HandleFunc("/price/top", controller.GetTopPriceMovements).Methods("GET")
+	a.Router.HandleFunc(newrelic.WrapHandleFunc(a.NewRelicApp, "/price/top", controller.GetTopPriceMovements)).Methods("GET")
+}
+
+func (a *App) initializeNewRelic() {
+	app, _ := newrelic.NewApplication(
+		newrelic.ConfigAppName("mtg-open-api-prd"),
+		newrelic.ConfigLicense(os.Getenv("NEW_RELIC")),
+		newrelic.ConfigDistributedTracerEnabled(true),
+	)
+
+	a.NewRelicApp = app
 }
 
 func (a *App) Run() {
