@@ -2,3 +2,5 @@
 .env
 mtg-openapi-macos
 mtg-openapi-arm
+.vscode/
+launch.json

@@ -11,6 +11,7 @@ import (
 	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 // TODO: refatorar gestao de erros
@@ -78,4 +79,16 @@ func GetAlert(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write([]byte(alertJson))
+}
+
+func GetTopPriceMovements(w http.ResponseWriter, r *http.Request) {
+	alertsCollection := MongoClient.Database("mtg").Collection("alerts")
+	opts := options.FindOne().SetSort(bson.D{primitive.E{Key: "created_at", Value: -1}})
+
+	var priceAlertObject model.AlertMessage
+	_ = alertsCollection.FindOne(context.TODO(), bson.D{}, opts).Decode(&priceAlertObject)
+	priceAlertJson, _ := json.Marshal(&priceAlertObject)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write([]byte(priceAlertJson))
 }

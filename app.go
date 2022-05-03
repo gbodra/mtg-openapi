@@ -53,6 +53,9 @@ func (a *App) initializeRoutes() {
 	a.Router.HandleFunc("/alert/{chatId}", controller.GetAlert).Methods("GET")
 	a.Router.HandleFunc("/alert", controller.OptinAlert).Methods("POST")
 	a.Router.HandleFunc("/alert/{alertId}", controller.AlertOptout).Methods("DELETE")
+
+	// Price
+	a.Router.HandleFunc("/price/top", controller.GetTopPriceMovements).Methods("GET")
 }
 
 func (a *App) Run() {
