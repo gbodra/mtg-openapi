@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/gbodra/mtg-openapi/controller"
+	"github.com/gbodra/mtg-openapi/utils"
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 	"github.com/newrelic/go-agent/v3/newrelic"
@@ -25,17 +26,11 @@ type App struct {
 
 func (a *App) Initialize() {
 	err := godotenv.Load()
-
-	if err != nil {
-		log.Println("Error loading .env")
-	}
+	utils.HandleError(err, "Error loading .env file")
 
 	clientOptions := options.Client().ApplyURI(os.Getenv("MONGO_URI"))
 	a.Mongo, err = mongo.Connect(context.TODO(), clientOptions)
-
-	if err != nil {
-		log.Println(err)
-	}
+	utils.HandleError(err, "Error connecting to Mongo")
 
 	a.Router = mux.NewRouter()
 	a.initializeNewRelic()
@@ -62,11 +57,13 @@ func (a *App) initializeRoutes() {
 }
 
 func (a *App) initializeNewRelic() {
-	app, _ := newrelic.NewApplication(
+	app, err := newrelic.NewApplication(
 		newrelic.ConfigAppName("mtg-open-api-prd"),
 		newrelic.ConfigLicense(os.Getenv("NEW_RELIC")),
 		newrelic.ConfigDistributedTracerEnabled(true),
 	)
+
+	utils.HandleError(err, "Error initializing NewRelic")
 
 	a.NewRelicApp = app
 }

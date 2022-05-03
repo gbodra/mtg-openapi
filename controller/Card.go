@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/gbodra/mtg-openapi/model"
+	"github.com/gbodra/mtg-openapi/utils"
 	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -28,7 +29,8 @@ func FindCardById(w http.ResponseWriter, r *http.Request) {
 	_ = pricesCollection.FindOne(context.TODO(), filter).Decode(&resultPrice)
 
 	result.Prices = getPrice(result.ID)
-	resultJson, _ := json.Marshal(result)
+	resultJson, err := json.Marshal(result)
+	utils.HandleError(err, "Error transforming object into json on FindCardById")
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write([]byte(resultJson))
@@ -45,7 +47,8 @@ func FindCardByName(w http.ResponseWriter, r *http.Request) {
 	_ = cardsCollection.FindOne(context.TODO(), filter).Decode(&result)
 
 	result.Prices = getPrice(result.ID)
-	resultsJson, _ := json.Marshal(result)
+	resultsJson, err := json.Marshal(result)
+	utils.HandleError(err, "Error transforming object into json on FindCardByName")
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write([]byte(resultsJson))
