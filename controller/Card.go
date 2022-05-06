@@ -3,7 +3,6 @@ package controller
 import (
 	"context"
 	"encoding/json"
-	"log"
 	"net/http"
 
 	"github.com/gbodra/mtg-openapi/model"
@@ -38,16 +37,24 @@ func FindCardById(w http.ResponseWriter, r *http.Request) {
 
 func FindCardByName(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query().Get("q")
-	log.Println(query)
-	var result model.Card
 
 	cardsCollection := MongoClient.Database("mtg").Collection("cards")
-	filter := bson.D{primitive.E{Key: "name", Value: query}}
+	matchStage := bson.D{{"$match", bson.D{{"$text", bson.D{{"$search", "\"" + query + "\""}}}}}}
 
-	_ = cardsCollection.FindOne(context.TODO(), filter).Decode(&result)
+	cursor, err := cardsCollection.Aggregate(context.TODO(), mongo.Pipeline{matchStage})
 
-	result.Prices = getPrice(result.ID)
-	resultsJson, err := json.Marshal(result)
+	utils.HandleError(err, "Error searching documents on FindCardByName")
+
+	var results []model.Card
+	cursor.All(context.TODO(), &results)
+
+	if len(results) == 0 {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	results[0].Prices = getPrice(results[0].ID)
+	resultsJson, err := json.Marshal(results[0])
 	utils.HandleError(err, "Error transforming object into json on FindCardByName")
 
 	w.Header().Set("Content-Type", "application/json")
@@ -55,10 +62,10 @@ func FindCardByName(w http.ResponseWriter, r *http.Request) {
 }
 
 func getPrice(cardId string) model.Price {
-	pricesCollection := MongoClient.Database("mtg").Collection("prices")
+	pricesAggregatedCollection := MongoClient.Database("mtg").Collection("prices_aggregated")
 	var resultPrice model.Price
 	filter := bson.D{primitive.E{Key: "id", Value: cardId}}
-	_ = pricesCollection.FindOne(context.TODO(), filter).Decode(&resultPrice)
+	_ = pricesAggregatedCollection.FindOne(context.TODO(), filter).Decode(&resultPrice)
 
 	return resultPrice
 }

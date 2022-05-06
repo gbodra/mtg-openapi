@@ -4,3 +4,4 @@ mtg-openapi-macos
 mtg-openapi-arm
 .vscode/
 launch.json
+__debug_bin
